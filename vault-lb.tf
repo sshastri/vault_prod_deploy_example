@@ -76,7 +76,7 @@ resource "aws_lb_listener" "vault_https_443" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   = "${data.aws_acm_certificate.vault_alb.arn}"
+  certificate_arn   = "${data.aws_acm_certificate.vault_certificate.arn}"
 
   default_action {
     target_group_arn = "${aws_lb_target_group.vault_https_8200.arn}"
@@ -89,7 +89,7 @@ resource "aws_lb_listener" "vault_https_8200" {
   port              = "8200"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   = "${data.aws_acm_certificate.vault_alb.arn}"
+  certificate_arn   = "${data.aws_acm_certificate.vault_certificate.arn}"
 
   default_action {
     target_group_arn = "${aws_lb_target_group.vault_https_8200.arn}"
@@ -111,13 +111,13 @@ resource "aws_route53_record" "hashi" {
 }
 
 
-resource "tls_private_key" "example" {
+resource "tls_private_key" "vault_tls" {
   algorithm = "ECDSA"
 }
 
-resource "tls_self_signed_cert" "example" {
-  key_algorithm   = "${tls_private_key.example.algorithm}"
-  private_key_pem = "${tls_private_key.example.private_key_pem}"
+resource "tls_self_signed_cert" "vault_tls" {
+  key_algorithm   = "${tls_private_key.vault_tls.algorithm}"
+  private_key_pem = "${tls_private_key.vault_tls.private_key_pem}"
 
   # Certificate expires after 72 hours.
   validity_period_hours = 72
@@ -142,8 +142,8 @@ resource "tls_self_signed_cert" "example" {
 }
 
 # For example, this can be used to populate an AWS IAM server certificate.
-resource "aws_iam_server_certificate" "example" {
-  name             = "example_self_signed_cert"
-  certificate_body = "${tls_self_signed_cert.example.cert_pem}"
-  private_key      = "${tls_private_key.example.private_key_pem}"
+resource "aws_iam_server_certificate" "vault_certificate" {
+  name             = "vault-dev-01"
+  certificate_body = "${tls_self_signed_cert.vault_tls.cert_pem}"
+  private_key      = "${tls_private_key.vault_tls.private_key_pem}"
 }
