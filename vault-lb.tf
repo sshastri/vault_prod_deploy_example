@@ -66,7 +66,7 @@ resource "aws_lb_target_group" "vault_https_8200" {
 }
 
 resource "aws_autoscaling_attachment" "vault_asg_attachment" {
-  autoscaling_group_name = "${aws_autoscaling_group.vault_asg.id}"
+  autoscaling_group_name = "${module.vault.vault_autoscale_group_id}"
   alb_target_group_arn   = "${aws_lb_target_group.vault_https_8200.arn}"
 }
 
