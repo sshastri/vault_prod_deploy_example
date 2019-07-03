@@ -4,7 +4,11 @@ provider aws {
 
 locals {
   cluster_name = "dev-primary-us-1"
+  acm_certificate_domain = "vault-dev-us-1.hashi-demos.com"
+  hostname               = "vault-dev-us-1"
+  route53_zone_name      = "hashi-demos.com."
 }
+
 
 data "aws_caller_identity" "current" {}
 
@@ -45,7 +49,7 @@ data "aws_ami" "vault_ami" {
 }
 
 module "consul_network" {
-  source              = "git@github.com:sshastri/IS-terraform-aws-consul-enterprise-ansible.git?ref=vault_tls//consul_network"
+  source              = "git@github.com:hashicorp/IS-terraform-aws-consul-enterprise-ansible.git?ref=vault_tls//consul_network"
   security_group_name = "consul-${local.cluster_name}"
   vpc_id              = "${data.terraform_remote_state.network.vpc_id}"
 
@@ -59,7 +63,7 @@ module "consul_network" {
 }
 
 module "consul_storage" {
-  source             = "git@github.com:sshastri/IS-terraform-aws-consul-enterprise-ansible.git?ref=vault_tls"
+  source             = "git@github.com:hashicorp/IS-terraform-aws-consul-enterprise-ansible.git?ref=vault_tls"
   cluster_name       = "consul-${local.cluster_name}"
   join_tag_key       = "ConsulClusterJoin"
   join_tag_value     = "${local.cluster_name}"
@@ -110,6 +114,8 @@ module "vault" {
   private_subnets    = ["${data.terraform_remote_state.network.private_subnets}"]
 
   consul_cluster_security_group_id = "${module.consul_network.cluster_security_group_id}"
+
+  lb_security_group_id = "${aws_security_group.vault_alb.id}"
 
   additional_sg_ids = [
     "${data.terraform_remote_state.network.bastion_security_group_id}",
