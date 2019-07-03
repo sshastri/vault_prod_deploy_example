@@ -76,7 +76,8 @@ resource "aws_lb_listener" "vault_https_443" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   = "${data.aws_acm_certificate.vault_certificate.arn}"
+  #certificate_arn   = "${data.aws_acm_certificate.vault_lb.arn}"
+  certificate_arn   = "${aws_iam_server_certificate.vault_certificate.arn}"
 
   default_action {
     target_group_arn = "${aws_lb_target_group.vault_https_8200.arn}"
@@ -89,7 +90,8 @@ resource "aws_lb_listener" "vault_https_8200" {
   port              = "8200"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   = "${data.aws_acm_certificate.vault_certificate.arn}"
+  #certificate_arn   = "${data.aws_acm_certificate.vault_lb.arn}"
+  certificate_arn   = "${aws_iam_server_certificate.vault_certificate.arn}"
 
   default_action {
     target_group_arn = "${aws_lb_target_group.vault_https_8200.arn}"
