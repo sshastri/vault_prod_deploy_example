@@ -44,8 +44,22 @@ data "aws_ami" "vault_ami" {
   owners = ["${data.aws_caller_identity.current.account_id}"]
 }
 
+module "consul_network" {
+  source              = "git@github.com:sshastri/IS-terraform-aws-consul-enterprise-ansible.git?ref=vault_tls/consul_network"
+  security_group_name = "consul-${local.cluster_name}"
+  vpc_id              = "${data.terraform_remote_state.network.vpc_id}"
+
+  server_rpc_port = 7300
+  lan_serf_port   = 7301
+  wan_serf_port   = 7302
+  https_port      = 7501
+  http_port       = -1
+  dns_port        = 7600
+
+}
+
 module "consul_storage" {
-  source             = "/Users/mac-loaner4/code/IS-terraform-aws-consul-enterprise-ansible"
+  source             = "git@github.com:sshastri/IS-terraform-aws-consul-enterprise-ansible.git?ref=vault_tls"
   cluster_name       = "consul-${local.cluster_name}"
   join_tag_key       = "ConsulClusterJoin"
   join_tag_value     = "${local.cluster_name}"
@@ -82,7 +96,7 @@ module "consul_storage" {
 }
 
 module "vault" {
-  source             = ""
+  source             = "git@github.com/hashicorp/IS-terraform-aws-vault-ansible"
   cluster_name       = "vault-${local.cluster_name}"
   join_tag_key       = "ConsulClusterJoin"
   join_tag_value     = "${local.cluster_name}"
@@ -112,4 +126,3 @@ module "vault" {
     )
   }"
 }
-
