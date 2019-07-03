@@ -45,7 +45,8 @@ resource "aws_lb" "vault" {
 
 # Name attribute must be 32 characters or less
 resource "aws_lb_target_group" "vault_https_8200" {
-  name = "${format("vault-https-8200-%s", local.cluster_name)}"
+  #name = "${format("vault-https-8200-%s", local.cluster_name)}"
+  name  = "vault-https-8200-dev"
 
   vpc_id               = "${data.terraform_remote_state.network.vpc_id}"
   port                 = "8200"
@@ -97,8 +98,8 @@ data "aws_route53_zone" "hashi" {
 
 resource "aws_route53_record" "hashi" {
   zone_id = "${data.aws_route53_zone.hashi.zone_id}"
-  name    = "${hostname}.${data.aws_route53_zone.hashi.name}"
+  name    = "${local.hostname}.${data.aws_route53_zone.hashi.name}"
   type    = "CNAME"
-  ttl     = "${local.route53_record_ttl}"
+  ttl     = "300"
   records = ["${aws_lb.vault.dns_name}"]
 }
