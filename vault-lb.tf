@@ -65,6 +65,12 @@ resource "aws_lb_target_group" "vault_https_8200" {
   }
 }
 
+resource "aws_autoscaling_attachment" "vault_asg_attachment" {
+  autoscaling_group_name = "${aws_autoscaling_group.vault_asg.id}"
+  alb_target_group_arn   = "${aws_lb_target_group.vault_https_8200.arn}"
+}
+
+
 resource "aws_lb_listener" "vault_https_443" {
   load_balancer_arn = "${aws_lb.vault.arn}"
   port              = "443"
