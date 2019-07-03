@@ -109,3 +109,41 @@ resource "aws_route53_record" "hashi" {
   ttl     = "300"
   records = ["${aws_lb.vault.dns_name}"]
 }
+
+
+resource "tls_private_key" "example" {
+  algorithm = "ECDSA"
+}
+
+resource "tls_self_signed_cert" "example" {
+  key_algorithm   = "${tls_private_key.example.algorithm}"
+  private_key_pem = "${tls_private_key.example.private_key_pem}"
+
+  # Certificate expires after 72 hours.
+  validity_period_hours = 72
+
+  # Generate a new certificate if Terraform is run within three
+  # hours of the certificate's expiration time.
+  early_renewal_hours = 3
+
+  # Reasonable set of uses for a server SSL certificate.
+  allowed_uses = [
+      "key_encipherment",
+      "digital_signature",
+      "server_auth",
+  ]
+
+  dns_names = ["vault-dev-us-1.hashi-demos.com"]
+
+  subject {
+      common_name  = "hashi-demos.com"
+      organization = "ACME Examples, Inc"
+  }
+}
+
+# For example, this can be used to populate an AWS IAM server certificate.
+resource "aws_iam_server_certificate" "example" {
+  name             = "example_self_signed_cert"
+  certificate_body = "${tls_self_signed_cert.example.cert_pem}"
+  private_key      = "${tls_private_key.example.private_key_pem}"
+}
